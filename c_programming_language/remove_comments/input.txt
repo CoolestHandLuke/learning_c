@@ -1,0 +1,11 @@
+// Hello, I am a comment
+
+I am not a comment.
+
+// I'm also a comment!
+
+testest123
+
+I am code that has // a comment at the end
+
+I should be visible while // I should not be visible
