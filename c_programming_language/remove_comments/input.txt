@@ -8,4 +8,5 @@ testest123
 
 I am code that has // a comment at the end
 
-I should be visible while // I should not be visible
+
+I should be visible // while I should not be visible
