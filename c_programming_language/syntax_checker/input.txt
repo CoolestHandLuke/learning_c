@@ -9,6 +9,7 @@ single quotes, and comments. I'll break it up in to chunks
 #include <stdbool.h>
 
 #define MAXLINE 1000
+bool is_everything_closed(int, int);
 
 int main(int argc, char *argv[]) {
 
@@ -25,9 +26,13 @@ int main(int argc, char *argv[]) {
 
     // LOGIC: Set flags and counts for each thing. When we find a new thing, determine wheter it's legal based on 
     // everything else that is open and their counts. 
-    // For starters, just do the curly brackets
+    // Now to check for square and round brackets
     bool curly_open = false;
+    bool square_open = false;
+    bool paranthese_open = false;
     int curly_open_count = 0; // Used to determine how many levels we are nested in
+    int square_open_count = 0;
+    int paranthese_open_count = 0;
 
     // Run through each line in the file
     while(fgets(buffer, MAXLINE, input_file) != 0) {
@@ -38,14 +43,36 @@ int main(int argc, char *argv[]) {
             } else if(buffer[i] == '{') {
                 curly_open = true;
                 curly_open_count++;
+            } else if(buffer[i] == '[') {
+                square_open = true;
+                square_open_count++;
+            } else if(buffer[i] == '(') {
+                paranthese_open == true;
+                paranthese_open_count++;
+            } else if (buffer[i] == ']') {
+                square_open = false;
+                square_open_count--;
+            } else if (buffer[i] == ')') {
+                paranthese_open = false;
+                paranthese_open_count--;
             } else if(buffer[i] == '}') {
-                // TODO: Check if everything is closed right here
                 curly_open_count--;
             }
+            
 
         }
     }
     printf("The amount of open (unbalanced) curly brackets is: %d\n", curly_open_count);
+    printf("The amount of open (unbalanced) square brackets is: %d\n", square_open_count);
+    printf("The amount of open (unbalanced) paranthese is: %d\n", paranthese_open_count);
 
     return 0;
+}
+
+bool is_everything_closed(int square_open_count, int paranthese_open_count) {
+    if(square_open_count == 0 && paranthese_open_count == 0) {
+        return true;
+    } else {
+        return false;
+    }
 }
