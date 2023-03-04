@@ -26,13 +26,20 @@ int main(int argc, char *argv[]) {
 
     // LOGIC: Set flags and counts for each thing. When we find a new thing, determine wheter it's legal based on 
     // everything else that is open and their counts. 
-    // Now to check for square and round brackets
+    // Now for the bullshit part where we have to check for single and double quotes
+    // Must also check to see if we are in a comment since this will mess up all the checkings
+    bool syntax_is_good = true;
     bool curly_open = false;
     bool square_open = false;
     bool paranthese_open = false;
+    bool double_quotes_open = false;
+    bool single_quotes_open = false;
+    bool block_comment_found = false;
     int curly_open_count = 0; // Used to determine how many levels we are nested in
     int square_open_count = 0;
     int paranthese_open_count = 0;
+    int double_quotes_open_count = 0;
+    int single_quotes_open_count = 0;
 
     // Run through each line in the file
     while(fgets(buffer, MAXLINE, input_file) != 0) {
@@ -40,21 +47,55 @@ int main(int argc, char *argv[]) {
             // Break if we find a null character (EOL)
             if (buffer[i] == '\0') {
                 break;
-            } else if(buffer[i] == '{') {
+            // Check for line comments next
+            } else if(buffer[i] == '/' && i > 0 && buffer[i - 1] == '/') {
+                break;
+            // Check for block comments next
+            } else if(buffer[i] == '*' && i > 0 && buffer[i - 1] == '/') {
+                block_comment_found = true;
+            // Next check to see if we have closed the block comment
+            } else if (buffer[i] == '/' && i > 0 && buffer[i - 1] == '*' && block_comment_found) {
+                block_comment_found = false;
+            // If we are in a block comment then nothing else matters, just continue
+            } else if (block_comment_found) {
+                continue;
+            // From here on we need to check to see if double or single quotes have been opened. If they have then we 
+            // have to ignore everything inside of them since they are not part of the format of the program
+            } else if(buffer[i] == '{' && !double_quotes_open && !single_quotes_open) {
                 curly_open = true;
                 curly_open_count++;
-            } else if(buffer[i] == '[') {
+            } else if(buffer[i] == '[' && !double_quotes_open && !single_quotes_open) {
                 square_open = true;
                 square_open_count++;
-            } else if(buffer[i] == '(') {
+            } else if(buffer[i] == '(' && !double_quotes_open && !single_quotes_open) {
                 paranthese_open == true;
                 paranthese_open_count++;
-            } else if (buffer[i] == ']') {
+            } else if (buffer[i] == ']' && !double_quotes_open && !single_quotes_open) {
                 square_open = false;
                 square_open_count--;
-            } else if (buffer[i] == ')') {
+            } else if (buffer[i] == ')' && !double_quotes_open && !single_quotes_open) {
                 paranthese_open = false;
                 paranthese_open_count--;
+            } else if(buffer[i] == '\"' && !double_quotes_open && !single_quotes_open) {
+                double_quotes_open = true;
+                double_quotes_open_count++;
+            } else if(buffer[i] == '\"' && double_quotes_open && i > 0 && (buffer[i - 1] != '\\')) {
+                double_quotes_open = false;
+                double_quotes_open_count--;
+            } else if(buffer[i] == '\'' && !single_quotes_open && !double_quotes_open) {
+                single_quotes_open = true;
+                single_quotes_open_count++;
+            } else if(buffer[i] == '\'' && single_quotes_open && i > 2 && (buffer[i - 2] = '\'' || buffer[i - 3] == '\'')) {
+                single_quotes_open = false;
+                single_quotes_open_count--;
+            // this next one checks to see if we are trying to close a curly bracket while we still have a square bracket
+            // or paranthese open. If so then we have a syntax error.
+            } else if(buffer[i] == '}' && (double_quotes_open || single_quotes_open)) {
+                continue;
+            } else if(buffer[i] == '}' && (square_open || paranthese_open)) {
+                syntax_is_good = false;
+                printf("%s", buffer);
+                break;
             } else if(buffer[i] == '}') {
                 curly_open_count--;
             }
@@ -62,9 +103,21 @@ int main(int argc, char *argv[]) {
 
         }
     }
+    if (syntax_is_good) {
+        printf("No syntax errors found.\n");
+    } else {
+        printf("Errors found, please see the results below.\n");
+    }
     printf("The amount of open (unbalanced) curly brackets is: %d\n", curly_open_count);
+    printf("Curly open status: %d\n", curly_open);
     printf("The amount of open (unbalanced) square brackets is: %d\n", square_open_count);
+    printf("Square bracket open status: %d\n", square_open);
     printf("The amount of open (unbalanced) paranthese is: %d\n", paranthese_open_count);
+    printf("Paranthese open status: %d\n", paranthese_open);
+    printf("The amount of open (unbalanced) double quotes i: %d\n", double_quotes_open_count);
+    printf("Double quotes open status: %d\n", double_quotes_open);
+    printf("The amoutn of open (unbalanced) single quotes is: %d\n", single_quotes_open_count);
+    printf("Single quotes open status: %d\n", single_quotes_open);
 
     return 0;
 }
